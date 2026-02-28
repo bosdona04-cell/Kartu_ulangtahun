@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kartu Ulang Tahun Premium</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:linear-gradient(135deg,#ff512f,#dd2476);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+overflow:hidden;
+color:#333;
+}
+
+.card{
+width:360px;
+height:230px;
+background:white;
+border-radius:20px;
+box-shadow:0 20px 40px rgba(0,0,0,0.3);
+display:flex;
+justify-content:center;
+align-items:center;
+cursor:pointer;
+position:relative;
+animation:floating 3s ease-in-out infinite;
+transition:0.5s;
+text-align:center;
+}
+
+@keyframes floating{
+0%{transform:translateY(0)}
+50%{transform:translateY(-15px)}
+100%{transform:translateY(0)}
+}
+
+.content{
+position:absolute;
+width:92%;
+top:10px;
+left:4%;
+display:none;
+flex-direction:column;
+align-items:center;
+background:white;
+border-radius:15px;
+padding:15px;
+max-height:90%;
+overflow:auto;
+}
+
+.content img{
+width:100px;
+height:100px;
+border-radius:50%;
+object-fit:cover;
+margin-bottom:10px;
+}
+
+textarea,input{
+width:95%;
+margin:5px;
+padding:8px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+margin-top:5px;
+padding:8px 12px;
+border:none;
+border-radius:8px;
+background:#dd2476;
+color:white;
+cursor:pointer;
+}
+
+canvas{
+position:absolute;
+top:0;
+left:0;
+pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="confetti"></canvas>
+
+<div class="card" onclick="openCard()">
+<h2 id="judul">Klik Untuk Buka 🎉</h2>
+
+<div class="content" id="content">
+<img id="photo" src="https://i.imgur.com/4AiXzf8.jpeg">
+
+<h3 id="namaPenerima"></h3>
+
+<textarea id="textUcapan" placeholder="Tulis ucapan di sini..."></textarea>
+<input type="text" id="namaPengirim" placeholder="Nama pengirim">
+<input type="file" id="musicUpload" accept="audio/*">
+<input type="file" id="photoUpload" accept="image/*">
+
+<button onclick="updateCard()">Tampilkan Ucapan</button>
+<button onclick="playAI()">Putar Suara AI 🤖</button>
+<button onclick="shareWA()">Share WhatsApp 📤</button>
+
+<p id="hasilUcapan"></p>
+<p id="hasilNama"></p>
+
+</div>
+</div>
+
+<audio id="bgMusic" loop></audio>
+
+<script>
+// Ambil nama dari URL
+const params=new URLSearchParams(window.location.search);
+const penerima=params.get("to");
+if(penerima){
+document.getElementById("namaPenerima").innerText="Untuk: "+penerima+" 🎂";
+document.getElementById("judul").innerText="Happy Birthday "+penerima+" 🎉";
+}
+
+// buka kartu
+function openCard(){
+document.getElementById("content").style.display="flex";
+startConfetti();
+}
+
+// update isi
+function updateCard(){
+let text=document.getElementById("textUcapan").value;
+let nama=document.getElementById("namaPengirim").value;
+document.getElementById("hasilUcapan").innerText=text;
+document.getElementById("hasilNama").innerText="Dari: "+nama;
+}
+
+// text to speech
+function playAI(){
+let text=document.getElementById("textUcapan").value;
+let speech=new SpeechSynthesisUtterance(text);
+speech.lang="id-ID";
+speech.rate=1;
+speech.pitch=1;
+window.speechSynthesis.speak(speech);
+}
+
+// upload musik
+document.getElementById("musicUpload").addEventListener("change",function(e){
+let file=e.target.files[0];
+let audio=document.getElementById("bgMusic");
+audio.src=URL.createObjectURL(file);
+audio.play();
+});
+
+// upload foto
+document.getElementById("photoUpload").addEventListener("change",function(e){
+let file=e.target.files[0];
+document.getElementById("photo").src=URL.createObjectURL(file);
+});
+
+// share WhatsApp
+function shareWA(){
+let url=window.location.href;
+window.open("https://wa.me/?text="+encodeURIComponent("Lihat kartu ulang tahun spesial ini 🎁 "+url));
+}
+
+// confetti
+let canvas=document.getElementById("confetti");
+let ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let pieces=[];
+for(let i=0;i<120;i++){
+pieces.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+r:Math.random()*6+2,
+d:Math.random()*100
+});
+}
+
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle="white";
+ctx.beginPath();
+for(let i=0;i<pieces.length;i++){
+let p=pieces[i];
+ctx.moveTo(p.x,p.y);
+ctx.arc(p.x,p.y,p.r,0,Math.PI*2,true);
+}
+ctx.fill();
+update();
+}
+
+function update(){
+for(let i=0;i<pieces.length;i++){
+let p=pieces[i];
+p.y+=Math.cos(p.d)+1+p.r/2;
+if(p.y>canvas.height){
+p.y=0;
+p.x=Math.random()*canvas.width;
+}
+}
+}
+
+function startConfetti(){
+setInterval(draw,20);
+}
+</script>
+
+</body>
+</html>
